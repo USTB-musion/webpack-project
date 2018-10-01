@@ -1,85 +1,75 @@
 const path = require('path')
-const webpack = require('webpack')
+const UglifyPlugin = require('uglifyjs-webpack-plugin')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
-const CleanWebpackPlugin = require('clean-webpack-plugin')
 const ExtractTextPlugin = require('extract-text-webpack-plugin')
 
-module.exports = env => {
-    if (!env) {
-        env = {}
-    }
+module.exports = {
+  entry: './src/index.js',
 
-    let plugins = [
-        new CleanWebpackPlugin(['dist']),
-        new HtmlWebpackPlugin({
-            template: './app/views/index.html'
-        }),
-    ]
+  output: {
+    path: path.resolve(__dirname, 'dist'),
+    filename: '[name].js',
+    publicPath: '/'
+  },
 
-    if (env.production) {
-        plugins.push(
-            new webpack.DefinePlugin({
-                'process.env': {
-                    NODE_ENV: "production"
-                }
-            }),
-            new ExtractTextPlugin("style.css")
-        )
-    }
+  module: {
+    rules: [
+      {
+        test: /\.jsx?/,
+        include: [
+          path.resolve(__dirname, 'src')
+        ],
+        use: 'babel-loader',
+      },
+      {
+        test: /\.less$/,
+        // 因为这个插件需要干涉模块转换的内容，所以需要使用它对应的 loader
+        use: ExtractTextPlugin.extract({ 
+          fallback: 'style-loader',
+          use: [
+            'css-loader', 
+            'less-loader',
+          ],
+        }), 
+      },
+      {
+        test: /\.css$/,
+        // 因为这个插件需要干涉模块转换的内容，所以需要使用它对应的 loader
+        use: ExtractTextPlugin.extract({ 
+          fallback: 'style-loader',
+          use: 'css-loader',
+        }), 
+      },
+      {
+        test: /\.(png|jpg|gif)$/,
+        use: [
+          {
+            loader: 'file-loader',
+            options: {},
+          },
+        ],
+      }
+    ],
+  },
 
-    return {
-        entry: {
-            app: './app/js/main.js'
-        },
-        devServer: {
-            contentBase: path.join(__dirname, 'dist'),
-            compress: true,
-            port: 9000
-        },
-        module: {
-            loaders: [
-                {
-                    test: /\.html$/,
-                    loader: 'html-loader'
-                },
-                {
-                    test: /\.vue$/,
-                    loader: 'vue-loader',
-                    options: {
-                        cssModules: {
-                            localIdentName: '[path][name]---[local]---[hash:base64:5]',
-                            camelCase: true
-                        },
-                        loaders: env.production ? {
-                            css: ExtractTextPlugin.extract({
-                                use: 'css-loader!px2rem-loader?remUnit=75&remPrecision=8',
-                                fallback: 'vue-style-loader'
-                            }),
-                            scss: ExtractTextPlugin.extract({
-                                use: 'css-loader!px2rem-loader?remUnit=75&remPrecision=8!sass-loader',
-                                fallback: 'vue-style-loader'
-                            })
-                        } : {
-                            css: 'vue-style-loader!css-loader!px2rem-loader?remUnit=75&remPrecision=8',
-                            scss: 'vue-style-loader!css-loader!px2rem-loader?remUnit=75&remPrecision=8!sass-loader'
-                        }
-                    }
-                },
-                {
-                    test: /\.scss$/,
-                    loader: 'style-loader!css-loader!sass-loader'
-                }
-            ]
-        },
-        plugins: plugins, 
-        resolve: {
-            alias: {
-                'vue$': 'vue/dist/vue.esm.js'
-            }
-        },
-        output: {
-            filename: '[name].min.js',
-            path: path.resolve(__dirname, 'dist')
-        }
-    }
+  // 代码模块路径解析的配置
+  resolve: {
+    modules: [
+      "node_modules",
+      path.resolve(__dirname, 'src')
+    ],
+
+    extensions: [".wasm", ".mjs", ".js", ".json", ".jsx"],
+  },
+
+  plugins: [
+    new HtmlWebpackPlugin({
+        filename: 'index.html', // 配置输出文件名和路径
+        template: 'src/assets/index.html', // 配置文件模板
+    }),
+    // 引入插件，配置文件名，这里同样可以使用 [hash]
+    new ExtractTextPlugin('[name].css'),
+    // 使用 uglifyjs-webpack-plugin 来压缩 JS 代码
+    new UglifyPlugin()
+  ],
 }
