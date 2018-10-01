@@ -1,3 +1,4 @@
+const webpack = require('webpack')
 const path = require('path')
 const UglifyPlugin = require('uglifyjs-webpack-plugin')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
@@ -58,8 +59,12 @@ module.exports = {
       "node_modules",
       path.resolve(__dirname, 'src')
     ],
-
+    // 这里的顺序代表匹配后缀的优先级，例如对于 index.js 和 index.jsx，会优先选择 index.js
     extensions: [".wasm", ".mjs", ".js", ".json", ".jsx"],
+  },
+
+  devServer: {
+    hot: true // dev server 的配置要启动 hot，或者在命令行中带参数开启
   },
 
   plugins: [
@@ -70,6 +75,8 @@ module.exports = {
     // 引入插件，配置文件名，这里同样可以使用 [hash]
     new ExtractTextPlugin('[name].css'),
     // 使用 uglifyjs-webpack-plugin 来压缩 JS 代码
-    new UglifyPlugin()
+    new UglifyPlugin(),
+    new webpack.NamedModulesPlugin(), // 用于启动 HMR 时可以显示模块的相对路径
+    new webpack.HotModuleReplacementPlugin(), // Hot Module Replacement 的插件
   ],
 }
