@@ -1,27 +1,18 @@
 {
-  "name": "webpack-start",
+  "name": "webpack4.x",
   "version": "1.0.0",
-  "description": "",
   "main": "index.js",
+  "license": "MIT",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "webpack-dev-server --mode development",
-    "build": "webpack --mode production"
+    "build": "webpack --config webpack.config.js",
+    "dev": "webpack-dev-server"
   },
-  "author": "musion",
-  "license": "ISC",
   "devDependencies": {
-    "babel-core": "^6.26.3",
-    "babel-loader": "^7.1.5",
-    "css-loader": "^1.0.0",
-    "extract-text-webpack-plugin": "^4.0.0-beta.0",
-    "file-loader": "^2.0.0",
     "html-webpack-plugin": "^3.2.0",
-    "style-loader": "^0.23.0",
-    "uglifyjs-webpack-plugin": "^2.0.1",
-    "webpack": "^4.20.2",
-    "webpack-cli": "^3.1.2",
-    "webpack-dev-server": "^3.1.9"
+    "webpack": "^4.28.4",
+    "webpack-cli": "^3.2.1"
   },
-  "dependencies": {}
+  "dependencies": {
+    "webpack-dev-server": "^3.1.14"
+  }
 }
