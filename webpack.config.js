@@ -43,6 +43,17 @@ module.exports = {
     rules: [
       // loader的顺序，字符串只用一个loader，多个loader需要[]，默认是从右向左执行，从下向上执行
       {
+        test: /\.js$/,
+        use: {
+          loader: "babel-loader",
+          options: {
+            // 用babel-loader 需要把es6 -> es5
+            presets: ["@babel/preset-env"],
+            plugins: ["@babel/plugin-proposal-class-properties"]
+          }
+        }
+      },
+      {
         test: /\.css$/,
         use: [MiniCssExtractPlugin.loader, "css-loader", "postcss-loader"]
       },
