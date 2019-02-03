@@ -4,6 +4,7 @@ let HtmlWebpackPlugin = require("html-webpack-plugin");
 let MiniCssExtractPlugin = require("mini-css-extract-plugin");
 let optimizeCss = require("optimize-css-assets-webpack-plugin");
 let UglifyJsPlugin = require("uglifyjs-webpack-plugin");
+let webpack = require("webpack");
 
 module.exports = {
   optimization: {
@@ -36,12 +37,20 @@ module.exports = {
     }),
     new MiniCssExtractPlugin({
       filename: "main.css"
+    }),
+    new webpack.ProvidePlugin({
+      // 在每个模块中都注入$
+      $: "jquery"
     })
   ],
   // 模块
   module: {
     rules: [
       // loader的顺序，字符串只用一个loader，多个loader需要[]，默认是从右向左执行，从下向上执行
+      {
+        test: require.resolve("jquery"),
+        use: "expose-loader?$"
+      },
       // {
       //   test: /\.js$/,
       //   use: {
