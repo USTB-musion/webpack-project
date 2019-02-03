@@ -46,8 +46,10 @@
 ## 全局变量引入问题
 
 三种方式：
-1.expose-loader 暴露到全局上
-2.providePlugin 给每个人提供一个\$ 3.引入不打包的方式
+
+- expose-loader 暴露到全局上
+- providePlugin 给每个人提供一个\$
+- 引入不打包的方式
 
 ## 打包图片
 
