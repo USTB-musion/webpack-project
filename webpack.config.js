@@ -48,6 +48,21 @@ module.exports = {
     rules: [
       // loader的顺序，字符串只用一个loader，多个loader需要[]，默认是从右向左执行，从下向上执行
       {
+        test: /\.html$/,
+        use: "html-withimg-loader"
+      },
+      {
+        test: /\.(png|jpg|gif)$/,
+        // 做一个限制，当我们的图片小于多少K时，用base 64转化
+        // 否则用file-loader产生真实的图片
+        use: {
+          loader: "url-loader",
+          options: {
+            limit: 200 * 1024
+          }
+        }
+      },
+      {
         test: require.resolve("jquery"),
         use: "expose-loader?$"
       },
