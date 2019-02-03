@@ -19,4 +19,10 @@ class A {
 let a = new A();
 console.log("111", a.a);
 
+function* gen(params) {
+  yield 1;
+}
+
+console.log(gen().next());
+
 console.log(str);

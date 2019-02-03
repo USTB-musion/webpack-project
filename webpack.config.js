@@ -42,16 +42,31 @@ module.exports = {
   module: {
     rules: [
       // loader的顺序，字符串只用一个loader，多个loader需要[]，默认是从右向左执行，从下向上执行
+      // {
+      //   test: /\.js$/,
+      //   use: {
+      //     loader: "eslint-loader",
+      //     options: {
+      //       enforce: "pre" // previous post
+      //     }
+      //   }
+      // },
       {
-        test: /\.js$/,
+        test: /\.js$/, // normal
         use: {
           loader: "babel-loader",
           options: {
             // 用babel-loader 需要把es6 -> es5
             presets: ["@babel/preset-env"],
-            plugins: ["@babel/plugin-proposal-class-properties"]
+            plugins: [
+              ["@babel/plugin-proposal-decorators", { legacy: true }],
+              ["@babel/plugin-proposal-class-properties", { loose: false }],
+              "@babel/plugin-transform-runtime"
+            ]
           }
-        }
+        },
+        include: path.resolve(__dirname, "src"),
+        exclude: /node_modules/
       },
       {
         test: /\.css$/,
