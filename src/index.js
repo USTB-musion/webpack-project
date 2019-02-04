@@ -1,48 +1,50 @@
-import $ from "jquery";
-console.log($); // 在每个模块中注入$对象
+console.log("index.js");
 
-// 三种方式：
-// 1.expose-loader 暴露到全局上
-// 2.providePlugin 给每个人提供一个$
-// 3.引入不打包的方式
+// import $ from "jquery";
+// console.log($); // 在每个模块中注入$对象
 
-// webpack📦图片
-// 1.在js中创建图片来引入
-// file-loader 默认会在内部生成一张图片到build目录下，把生成的图片返回回来
-import logo from "./react.jpg"; // 把图片引入，返回的结果是一个新的图片地址
-let image = new Image();
-image.src = logo;
-console.log(logo);
-document.body.appendChild(image);
+// // 三种方式：
+// // 1.expose-loader 暴露到全局上
+// // 2.providePlugin 给每个人提供一个$
+// // 3.引入不打包的方式
 
-// 2.在css中引入background: url("")
-// 3.<img src="" alt="">
+// // webpack📦图片
+// // 1.在js中创建图片来引入
+// // file-loader 默认会在内部生成一张图片到build目录下，把生成的图片返回回来
+// import logo from "./react.jpg"; // 把图片引入，返回的结果是一个新的图片地址
+// let image = new Image();
+// image.src = logo;
+// console.log(logo);
+// document.body.appendChild(image);
 
-console.log("musion");
+// // 2.在css中引入background: url("")
+// // 3.<img src="" alt="">
 
-let str = require("./a");
+// console.log("musion");
 
-require("./index.css");
+// let str = require("./a");
 
-require("./index.less");
+// require("./index.css");
 
-let test = () => {
-  console.log("666");
-};
+// require("./index.less");
 
-test();
+// let test = () => {
+//   console.log("666");
+// };
 
-class A {
-  a = 1;
-}
+// test();
 
-let a = new A();
-console.log("111", a.a);
+// class A {
+//   a = 1;
+// }
 
-function* gen(params) {
-  yield 1;
-}
+// let a = new A();
+// console.log("111", a.a);
 
-console.log(gen().next());
+// function* gen(params) {
+//   yield 1;
+// }
 
-console.log(str);
+// console.log(gen().next());
+
+// console.log(str);

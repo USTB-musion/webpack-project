@@ -77,3 +77,32 @@
         }
       },
 ```
+
+## 📦多页应用
+```js
+module.exports = {
+  // 多入口
+  entry: {
+    home: "./src/index.js",
+    other: "./src/other.js"
+  },
+  output: {
+    // name -> home a
+    filename: "[name].js",
+    path: path.resolve(__dirname, "dist")
+  },
+  plugins: [
+    new HtmlWebpackPlugin({
+      template: "./src/index.html",
+      filename: "index.html",
+      chunks: ["home"]
+    }),
+    new HtmlWebpackPlugin({
+      template: "./src/index.html",
+      filename: "other.html",
+      chunks: ["other", "home"]
+    })
+  ]
+};
+```
+
