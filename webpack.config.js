@@ -1,5 +1,12 @@
 let path = require("path");
 let HtmlWebpackPlugin = require("html-webpack-plugin");
+let cleanWebpackPlugin = require("clean-webpack-plugin");
+let copyWebpackPlugin = require("copy-webpack-plugin");
+let webpack = require("webpack");
+
+// 1. cleanWebpackPlugin
+// 2. copyWebpackPlugin
+// 3. bannerPlugin 内置
 
 module.exports = {
   mode: "production",
@@ -20,16 +27,6 @@ module.exports = {
       }
     ]
   },
-  watch: true,
-  // 监控的选项
-  watchOptions: {
-    poll: 1000,
-    // 防抖
-    aggregateTimeout: 500,
-    // 不需要进行监控哪个文件
-    ignored: /node_modules/
-  },
-  devtool: "cheap-module-source-map",
   output: {
     // name -> home a
     filename: "[name].js",
@@ -39,7 +36,11 @@ module.exports = {
     new HtmlWebpackPlugin({
       template: "./src/index.html",
       filename: "index.html"
-    })
+    }),
+    new cleanWebpackPlugin("./dist"),
+    // 拷贝插件
+    new copyWebpackPlugin([{ from: "./doc", to: "./dist" }]),
+    new webpack.BannerPlugin("make 2019 by musion")
   ]
 };
 

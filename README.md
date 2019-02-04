@@ -126,3 +126,12 @@ module.exports = {
   },
   devtool: "cheap-module-source-map",
 ```
+
+## 好用的一些小插件
+
+- cleanWebpackPlugin
+  A webpack plugin to remove/clean your build folder(s) before building
+- copyWebpackPlugin
+  Copies individual files or entire directories to the build directory.
+- bannerPlugin 内置
+  为每个 chunk 文件头部添加 banner（比如说版本信息等）
