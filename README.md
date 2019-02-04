@@ -1,3 +1,8 @@
+##使用说明
+
+- 切换不同的分支对应对应的代码
+- 分为 webpack 基础配置，webpack 优化，taptable，手写 webpack，手写 loader，手写 plugins
+
 ## webpack 可以进行 0 配置
 
 - 📦 工具 -> 输出后的结果(JS 模块)
@@ -78,7 +83,8 @@
       },
 ```
 
-## 📦多页应用
+## 📦 多页应用
+
 ```js
 module.exports = {
   // 多入口
@@ -106,3 +112,17 @@ module.exports = {
 };
 ```
 
+## watch && sourceMap
+
+```js
+  watch: true,
+  // 监控的选项
+  watchOptions: {
+    poll: 1000,
+    // 防抖
+    aggregateTimeout: 500,
+    // 不需要进行监控哪个文件
+    ignored: /node_modules/
+  },
+  devtool: "cheap-module-source-map",
+```

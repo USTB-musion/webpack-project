@@ -2,11 +2,34 @@ let path = require("path");
 let HtmlWebpackPlugin = require("html-webpack-plugin");
 
 module.exports = {
+  mode: "production",
   // 多入口
   entry: {
-    home: "./src/index.js",
-    other: "./src/other.js"
+    home: "./src/index.js"
   },
+  module: {
+    rules: [
+      {
+        test: /\.js$/,
+        use: {
+          loader: "babel-loader",
+          options: {
+            presets: ["@babel/preset-env"]
+          }
+        }
+      }
+    ]
+  },
+  watch: true,
+  // 监控的选项
+  watchOptions: {
+    poll: 1000,
+    // 防抖
+    aggregateTimeout: 500,
+    // 不需要进行监控哪个文件
+    ignored: /node_modules/
+  },
+  devtool: "cheap-module-source-map",
   output: {
     // name -> home a
     filename: "[name].js",
@@ -15,13 +38,7 @@ module.exports = {
   plugins: [
     new HtmlWebpackPlugin({
       template: "./src/index.html",
-      filename: "index.html",
-      chunks: ["home"]
-    }),
-    new HtmlWebpackPlugin({
-      template: "./src/index.html",
-      filename: "other.html",
-      chunks: ["other", "home"]
+      filename: "index.html"
     })
   ]
 };

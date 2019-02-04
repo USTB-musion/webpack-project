@@ -1,5 +1,13 @@
 console.log("index.js");
 
+class Log {
+  constructor() {
+    console.log("error");
+  }
+}
+
+let log = new Log();
+
 // import $ from "jquery";
 // console.log($); // 在每个模块中注入$对象
 
