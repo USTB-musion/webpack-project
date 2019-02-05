@@ -251,3 +251,15 @@ module.exports = smart(base, {
     noParse: /jquery/
   },
 ```
+
+## ignorePlugin
+
+- moment 2.18 会将所有本地化内容和核心功能一起打包）。可以使用 IgnorePlugin 在打包时忽略本地化内容，经过实验，使用 ignorePlugin 之后 📦 之后的体积由 1.2M 降低至 800K
+
+```js
+// 用法：
+new webpack.IgnorePlugin(requestRegExp, [contextRegExp]);
+
+//eg.
+plugins: [new webpack.IgnorePlugin(/\.\/local/, /moment/)];
+```

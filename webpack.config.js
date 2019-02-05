@@ -18,6 +18,8 @@ module.exports = {
       },
       {
         test: /\.js$/,
+        exclude: /node_modules/,
+        include: path.resolve("src"),
         use: {
           loader: "babel-loader",
           options: {
@@ -33,6 +35,7 @@ module.exports = {
     path: path.resolve(__dirname, "dist")
   },
   plugins: [
+    new webpack.IgnorePlugin(/\.\/local/, /moment/),
     new HtmlWebpackPlugin({
       template: "./src/index.html",
       filename: "index.html"
