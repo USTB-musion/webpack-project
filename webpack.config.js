@@ -33,6 +33,8 @@ module.exports = {
     other: "./src/other.js"
   },
   devServer: {
+    // 启用热更新
+    hot: true,
     port: 3000,
     open: true,
     contentBase: "./dist"
@@ -75,7 +77,9 @@ module.exports = {
     }),
     new webpack.DefinePlugin({
       DEV: JSON.stringify("production")
-    })
+    }),
+    new webpack.NamedModulesPlugin(), // 打印更新的模块路径
+    new webpack.HotModuleReplacementPlugin() // 热更新插件
   ]
 };
 

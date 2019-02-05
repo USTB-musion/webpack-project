@@ -1,14 +1,9 @@
-let button = document.createElement("button");
+import src from "./source.js";
 
-button.innerHTML = "musion";
+console.log("12321", src);
 
-// vue，react的懒加载原理也是如此
-button.addEventListener("click", function() {
-  // es6草案中的语法, jsonp实现动态加载文件
-  import("./source.js").then(data => {
-    console.log(data.default);
+if (module.hot) {
+  module.hot.accept("./source", () => {
+    console.log("123");
   });
-  console.log("click");
-});
-
-document.body.appendChild(button);
+}
