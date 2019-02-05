@@ -433,3 +433,35 @@ module.exports = {
 ## Tree-Shaking
 
 - 基于 import/export 语法，Tree-Shaking 可以在编译的过程中获悉哪些模块并没有真正被使用，这些没用的代码，在最后打包的时候会被去除。适合于处理模块级别的代码
+
+## 抽离公共代码
+```js
+  // webpack 4.x版本之前的commonChunkPlugins
+  optimization: {
+    // 分割代码块
+    splitChunks: {
+      // 缓存组
+      cacheGroups: {
+        // 公共模块
+        common: {
+          chunks: "initial",
+          minSize: 0,
+          minChunks: 2
+        },
+        vendor: {
+          priority: 1,
+          // 抽离出来
+          test: /node_modules/,
+          chunks: "initial",
+          minSize: 0,
+          minChunks: 2
+        }
+      }
+    }
+  },
+  // 多入口
+  entry: {
+    index: "./src/index.js",
+    other: "./src/other.js"
+  },
+```

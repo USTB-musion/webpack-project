@@ -3,10 +3,34 @@ let HtmlWebpackPlugin = require("html-webpack-plugin");
 let webpack = require("webpack");
 
 module.exports = {
-  mode: "development",
+  mode: "production",
+  // webpack 4.x版本之前的commonChunkPlugins
+  optimization: {
+    // 分割代码块
+    splitChunks: {
+      // 缓存组
+      cacheGroups: {
+        // 公共模块
+        common: {
+          chunks: "initial",
+          minSize: 0,
+          minChunks: 2
+        },
+        vendor: {
+          priority: 1,
+          // 抽离出来
+          test: /node_modules/,
+          chunks: "initial",
+          minSize: 0,
+          minChunks: 2
+        }
+      }
+    }
+  },
   // 多入口
   entry: {
-    home: "./src/index.js"
+    index: "./src/index.js",
+    other: "./src/other.js"
   },
   devServer: {
     port: 3000,
