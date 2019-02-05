@@ -1,5 +1,6 @@
 let path = require("path");
 let HtmlWebpackPlugin = require("html-webpack-plugin");
+let webpack = require("webpack");
 
 module.exports = {
   mode: "production",
@@ -26,9 +27,9 @@ module.exports = {
   },
   // 解析第三方包 common
   resolve: {
-    modules: [path.resolve("node_modules")],
+    // modules: [path.resolve("node_modules")],
     // 扩展名
-    extensions: [".js", ".css", ".json", ".vue"]
+    // extensions: [".js", ".css", ".json", ".vue"]
     // mainFields: ["style", "main"],
     //入口的名字 默认为index.js
     // mainFiles: [],
@@ -62,6 +63,9 @@ module.exports = {
     new HtmlWebpackPlugin({
       template: "./src/index.html",
       filename: "index.html"
+    }),
+    new webpack.DefinePlugin({
+      DEV: JSON.stringify("production")
     })
   ]
 };

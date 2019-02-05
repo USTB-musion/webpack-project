@@ -195,3 +195,15 @@ app.use(middle(compiler));
     }
   }
 ```
+
+## 定义环境变量
+
+- DefinePlugin 允许创建一个在编译时可以配置的全局常量。这可能会对开发模式和发布模式的构建允许不同的行为非常有用
+
+```js
+plugins: [
+  new webpack.DefinePlugin({
+    DEV: JSON.stringify("production")
+  })
+];
+```

@@ -1,6 +1,7 @@
-import "./style";
+// import "./style";
 
 // import "bootstrap";
+console.log(DEV);
 
 let xhr = new XMLHttpRequest();
 
