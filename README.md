@@ -207,3 +207,34 @@ plugins: [
   })
 ];
 ```
+
+## 区分不同环境
+
+- 开发环境：webpack.dev.js
+
+```js
+// 这是开发环境webpack.dev.js
+let { smart } = require("webpack-merge");
+
+let base = require("./webpack.config.js");
+
+module.exports = smart(base, {
+  mode: "development"
+});
+```
+
+- 生产环境：webpack.prod.js
+
+```js
+// 这是生产环境webpack.prod.js
+let { smart } = require("webpack-merge");
+
+let base = require("./webpack.config.js");
+
+module.exports = smart(base, {
+  mode: "production",
+  optimization: {
+    minimizer: []
+  }
+});
+```

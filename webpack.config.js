@@ -3,7 +3,6 @@ let HtmlWebpackPlugin = require("html-webpack-plugin");
 let webpack = require("webpack");
 
 module.exports = {
-  mode: "production",
   // 多入口
   entry: {
     home: "./src/index.js"
