@@ -1,4 +1,5 @@
-import React from "react";
-import { render } from "react-dom";
+import calc from "./test.js";
 
-render(<h1>jsx</h1>, window.root);
+// tree-shaking 把没用的代码，自动删除掉
+
+console.log(calc.sum(1, 2));

@@ -1,8 +1,6 @@
 let path = require("path");
 let HtmlWebpackPlugin = require("html-webpack-plugin");
 let webpack = require("webpack");
-let Happypack = require("happypack");
-// 模块 happypack 可以实现多线程📦
 
 module.exports = {
   mode: "development",
@@ -21,13 +19,18 @@ module.exports = {
     rules: [
       {
         test: /\.css$/,
-        use: "Happypack/loader?id=css"
+        use: ["style-loader", "css-loader"]
       },
       {
         test: /\.js$/,
         exclude: /node_modules/,
         include: path.resolve("src"),
-        use: "Happypack/loader?id=js"
+        use: {
+          loader: "babel-loader",
+          options: {
+            presets: ["@babel/preset-env", "@babel/preset-react"]
+          }
+        }
       }
     ]
   },
@@ -37,21 +40,6 @@ module.exports = {
     path: path.resolve(__dirname, "dist")
   },
   plugins: [
-    new Happypack({
-      id: "css",
-      use: ["style-loader", "css-loader"]
-    }),
-    new Happypack({
-      id: "js",
-      use: [
-        {
-          loader: "babel-loader",
-          options: {
-            presets: ["@babel/preset-env", "@babel/preset-react"]
-          }
-        }
-      ]
-    }),
     new webpack.DllReferencePlugin({
       manifest: path.resolve(__dirname, "dist", "manifest.json")
     }),

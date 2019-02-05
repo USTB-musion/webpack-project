@@ -429,3 +429,7 @@ module.exports = {
   ]
 };
 ```
+
+## Tree-Shaking
+
+- 基于 import/export 语法，Tree-Shaking 可以在编译的过程中获悉哪些模块并没有真正被使用，这些没用的代码，在最后打包的时候会被去除。适合于处理模块级别的代码
