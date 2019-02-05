@@ -435,6 +435,7 @@ module.exports = {
 - 基于 import/export 语法，Tree-Shaking 可以在编译的过程中获悉哪些模块并没有真正被使用，这些没用的代码，在最后打包的时候会被去除。适合于处理模块级别的代码
 
 ## 抽离公共代码
+
 ```js
   // webpack 4.x版本之前的commonChunkPlugins
   optimization: {
@@ -464,4 +465,25 @@ module.exports = {
     index: "./src/index.js",
     other: "./src/other.js"
   },
+```
+
+## 懒加载
+
+- 通过 es6 的 import 实现懒加载
+
+```js
+let button = document.createElement("button");
+
+button.innerHTML = "musion";
+
+// vue，react的懒加载原理也是如此
+button.addEventListener("click", function() {
+  // es6草案中的语法, jsonp实现动态加载文件
+  import("./source.js").then(data => {
+    console.log(data.default);
+  });
+  console.log("click");
+});
+
+document.body.appendChild(button);
 ```
