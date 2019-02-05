@@ -130,8 +130,50 @@ module.exports = {
 ## 好用的一些小插件
 
 - cleanWebpackPlugin
-  A webpack plugin to remove/clean your build folder(s) before building
+  （A webpack plugin to remove/clean your build folder(s) before building）
 - copyWebpackPlugin
-  Copies individual files or entire directories to the build directory.
+  （Copies individual files or entire directories to the build directory.）
 - bannerPlugin 内置
-  为每个 chunk 文件头部添加 banner（比如说版本信息等）
+  （为每个 chunk 文件头部添加 banner（比如说版本信息等））
+
+## webpack 跨域
+
+- 代理：重写的方式，把请求代理到 express 服务器上 代理
+
+```js
+  devServer: {
+    proxy: {
+      "/api": {
+        target: "http://localhost:3000",
+        pathRewrite: { "/api": "" }
+      }
+    }
+  },
+```
+
+- 前端单纯想 mock 数据
+
+```js
+  devServer: {
+    before(app) {
+      app.get("/api/user", (req, res) => {
+        res.json({ name: "musion-before" });
+      });
+    }
+  },
+```
+
+- 把前端代码启动到服务端上：利用 webpack-dev-middleware
+
+```js
+let webpack = require("webpack");
+
+// 中间件
+let middle = require("webpack-dev-middleware");
+
+let config = require("./webpack.config.js");
+
+let compiler = webpack(config);
+
+app.use(middle(compiler));
+```

@@ -1,12 +1,5 @@
 let path = require("path");
 let HtmlWebpackPlugin = require("html-webpack-plugin");
-let cleanWebpackPlugin = require("clean-webpack-plugin");
-let copyWebpackPlugin = require("copy-webpack-plugin");
-let webpack = require("webpack");
-
-// 1. cleanWebpackPlugin
-// 2. copyWebpackPlugin
-// 3. bannerPlugin 内置
 
 module.exports = {
   mode: "production",
@@ -27,6 +20,22 @@ module.exports = {
       }
     ]
   },
+  devServer: {
+    // 3.把前端代码启动到服务端上
+    // 2.前端单纯想模拟数据
+    // before(app) {
+    //   app.get("/api/user", (req, res) => {
+    //     res.json({ name: "musion-before" });
+    //   });
+    // }
+    // 1.重写的方式，把请求代理到express服务器上 代理
+    // proxy: {
+    //   "/api": {
+    //     target: "http://localhost:3000",
+    //     pathRewrite: { "/api": "" }
+    //   }
+    // }
+  },
   output: {
     // name -> home a
     filename: "[name].js",
@@ -36,11 +45,7 @@ module.exports = {
     new HtmlWebpackPlugin({
       template: "./src/index.html",
       filename: "index.html"
-    }),
-    new cleanWebpackPlugin("./dist"),
-    // 拷贝插件
-    new copyWebpackPlugin([{ from: "./doc", to: "./dist" }]),
-    new webpack.BannerPlugin("make 2019 by musion")
+    })
   ]
 };
 
