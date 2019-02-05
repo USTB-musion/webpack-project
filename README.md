@@ -355,3 +355,77 @@ module.exports = {
   ]
 };
 ```
+
+## Happypack——将 loader 由单进程转为多进程
+
+- 大家知道，webpack 是单线程的，就算此刻存在多个任务，你也只能排队一个接一个地等待处理。这是 webpack 的缺点，好在我们的 CPU 是多核的，Happypack 会充分释放 CPU 在多核并发方面的优势，帮我们把任务分解给多个子进程去并发执行，大大提升打包效率。
+
+```js
+let path = require("path");
+let HtmlWebpackPlugin = require("html-webpack-plugin");
+let webpack = require("webpack");
+let Happypack = require("happypack");
+// 模块 happypack 可以实现多线程📦
+
+module.exports = {
+  mode: "development",
+  // 多入口
+  entry: {
+    home: "./src/index.js"
+  },
+  devServer: {
+    port: 3000,
+    open: true,
+    contentBase: "./dist"
+  },
+  module: {
+    // 不去解析jquery的依赖关系
+    noParse: /jquery/,
+    rules: [
+      {
+        test: /\.css$/,
+        use: "Happypack/loader?id=css"
+      },
+      {
+        test: /\.js$/,
+        exclude: /node_modules/,
+        include: path.resolve("src"),
+        use: "Happypack/loader?id=js"
+      }
+    ]
+  },
+  output: {
+    // name -> home a
+    filename: "[name].js",
+    path: path.resolve(__dirname, "dist")
+  },
+  plugins: [
+    new Happypack({
+      id: "css",
+      use: ["style-loader", "css-loader"]
+    }),
+    new Happypack({
+      id: "js",
+      use: [
+        {
+          loader: "babel-loader",
+          options: {
+            presets: ["@babel/preset-env", "@babel/preset-react"]
+          }
+        }
+      ]
+    }),
+    new webpack.DllReferencePlugin({
+      manifest: path.resolve(__dirname, "dist", "manifest.json")
+    }),
+    new webpack.IgnorePlugin(/\.\/local/, /moment/),
+    new HtmlWebpackPlugin({
+      template: "./src/index.html",
+      filename: "index.html"
+    }),
+    new webpack.DefinePlugin({
+      DEV: JSON.stringify("production")
+    })
+  ]
+};
+```
