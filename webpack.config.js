@@ -3,11 +3,14 @@ let HtmlWebpackPlugin = require("html-webpack-plugin");
 let webpack = require("webpack");
 
 module.exports = {
+  mode: "development",
   // 多入口
   entry: {
     home: "./src/index.js"
   },
   module: {
+    // 不去解析jquery的依赖关系
+    noParse: /jquery/,
     rules: [
       {
         test: /\.css$/,
@@ -18,40 +21,11 @@ module.exports = {
         use: {
           loader: "babel-loader",
           options: {
-            presets: ["@babel/preset-env"]
+            presets: ["@babel/preset-env", "@babel/preset-react"]
           }
         }
       }
     ]
-  },
-  // 解析第三方包 common
-  resolve: {
-    // modules: [path.resolve("node_modules")],
-    // 扩展名
-    // extensions: [".js", ".css", ".json", ".vue"]
-    // mainFields: ["style", "main"],
-    //入口的名字 默认为index.js
-    // mainFiles: [],
-    // 别名
-    // alias: {
-    //   bootstrap: "bootstrap/dist/css/bootstrap.css"
-    // }
-  },
-  devServer: {
-    // 3.把前端代码启动到服务端上
-    // 2.前端单纯想模拟数据
-    // before(app) {
-    //   app.get("/api/user", (req, res) => {
-    //     res.json({ name: "musion-before" });
-    //   });
-    // }
-    // 1.重写的方式，把请求代理到express服务器上 代理
-    // proxy: {
-    //   "/api": {
-    //     target: "http://localhost:3000",
-    //     pathRewrite: { "/api": "" }
-    //   }
-    // }
   },
   output: {
     // name -> home a
