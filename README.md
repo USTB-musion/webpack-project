@@ -177,3 +177,21 @@ let compiler = webpack(config);
 
 app.use(middle(compiler));
 ```
+
+## resolve 属性的配置
+
+```js
+  // 解析第三方包 common
+  resolve: {
+    modules: [path.resolve("node_modules")],
+    // 扩展名
+    extensions: [".js", ".css", ".json", ".vue"]
+    mainFields: ["style", "main"],
+    入口的名字 默认为index.js
+    mainFiles: [],
+    别名
+    alias: {
+      bootstrap: "bootstrap/dist/css/bootstrap.css"
+    }
+  }
+```

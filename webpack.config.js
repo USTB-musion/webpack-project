@@ -10,6 +10,10 @@ module.exports = {
   module: {
     rules: [
       {
+        test: /\.css$/,
+        use: ["style-loader", "css-loader"]
+      },
+      {
         test: /\.js$/,
         use: {
           loader: "babel-loader",
@@ -19,6 +23,19 @@ module.exports = {
         }
       }
     ]
+  },
+  // 解析第三方包 common
+  resolve: {
+    modules: [path.resolve("node_modules")],
+    // 扩展名
+    extensions: [".js", ".css", ".json", ".vue"]
+    // mainFields: ["style", "main"],
+    //入口的名字 默认为index.js
+    // mainFiles: [],
+    // 别名
+    // alias: {
+    //   bootstrap: "bootstrap/dist/css/bootstrap.css"
+    // }
   },
   devServer: {
     // 3.把前端代码启动到服务端上
@@ -144,10 +161,10 @@ module.exports = {
 //         include: path.resolve(__dirname, "src"),
 //         exclude: /node_modules/
 //       },
-//       {
-//         test: /\.css$/,
-//         use: [MiniCssExtractPlugin.loader, "css-loader", "postcss-loader"]
-//       },
+// {
+//   test: /\.css$/,
+//   use: [MiniCssExtractPlugin.loader, "css-loader", "postcss-loader"]
+// },
 //       {
 //         test: /\.less$/,
 //         use: [
