@@ -8,6 +8,11 @@ module.exports = {
   entry: {
     home: "./src/index.js"
   },
+  devServer: {
+    port: 3000,
+    open: true,
+    contentBase: "./dist"
+  },
   module: {
     // 不去解析jquery的依赖关系
     noParse: /jquery/,
@@ -35,6 +40,9 @@ module.exports = {
     path: path.resolve(__dirname, "dist")
   },
   plugins: [
+    new webpack.DllReferencePlugin({
+      manifest: path.resolve(__dirname, "dist", "manifest.json")
+    }),
     new webpack.IgnorePlugin(/\.\/local/, /moment/),
     new HtmlWebpackPlugin({
       template: "./src/index.html",

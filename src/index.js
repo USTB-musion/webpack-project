@@ -1,17 +1,4 @@
-import jquery from "jquery";
+import React from "react";
+import { render } from "react-dom";
 
-import moment from "moment";
-
-// 设置语言
-
-// 手动引入所需要的语言
-import "moment/locale/zh-cn";
-
-moment.locale("zh-cn");
-
-console.log(
-  "00",
-  moment()
-    .endOf("day")
-    .fromNow()
-);
+render(<h1>jsx</h1>, window.root);

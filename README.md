@@ -263,3 +263,95 @@ new webpack.IgnorePlugin(requestRegExp, [contextRegExp]);
 //eg.
 plugins: [new webpack.IgnorePlugin(/\.\/local/, /moment/)];
 ```
+
+## DllPlugin
+
+- DllPlugin 是基于 Windows 动态链接库（dll）的思想被创作出来的。这个插件会把第三方库单独打包到一个文件中，这个文件就是一个单纯的依赖库。这个依赖库不会跟着你的业务代码一起被重新打包，只有当依赖自身发生版本变化时才会重新打包。
+
+#### 用 DllPlugin 处理文件，要分两步走：
+
+- 基于 dll 专属的配置文件，打包 dll 库
+
+```js
+let path = require("path");
+let webpack = require("webpack");
+
+module.exports = {
+  mode: "development",
+  entry: {
+    react: ["react", "react-dom"]
+  },
+  output: {
+    filename: "_dll_[name].js", // 产生的文件名
+    path: path.resolve(__dirname, "dist"),
+    library: "_dll_[name]"
+  },
+  plugins: [
+    // name要等于library里的name
+    new webpack.DllPlugin({
+      name: "_dll_[name]",
+      path: path.resolve(__dirname, "dist", "manifest.json")
+    })
+  ]
+};
+```
+
+- 基于 webpack.config.js 文件，打包业务代码
+
+```js
+let path = require("path");
+let HtmlWebpackPlugin = require("html-webpack-plugin");
+let webpack = require("webpack");
+
+module.exports = {
+  mode: "development",
+  // 多入口
+  entry: {
+    home: "./src/index.js"
+  },
+  devServer: {
+    port: 3000,
+    open: true,
+    contentBase: "./dist"
+  },
+  module: {
+    // 不去解析jquery的依赖关系
+    noParse: /jquery/,
+    rules: [
+      {
+        test: /\.css$/,
+        use: ["style-loader", "css-loader"]
+      },
+      {
+        test: /\.js$/,
+        exclude: /node_modules/,
+        include: path.resolve("src"),
+        use: {
+          loader: "babel-loader",
+          options: {
+            presets: ["@babel/preset-env", "@babel/preset-react"]
+          }
+        }
+      }
+    ]
+  },
+  output: {
+    // name -> home a
+    filename: "[name].js",
+    path: path.resolve(__dirname, "dist")
+  },
+  plugins: [
+    new webpack.DllReferencePlugin({
+      manifest: path.resolve(__dirname, "dist", "manifest.json")
+    }),
+    new webpack.IgnorePlugin(/\.\/local/, /moment/),
+    new HtmlWebpackPlugin({
+      template: "./src/index.html",
+      filename: "index.html"
+    }),
+    new webpack.DefinePlugin({
+      DEV: JSON.stringify("production")
+    })
+  ]
+};
+```
