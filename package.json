@@ -48,6 +48,7 @@
     "moment": "^2.24.0",
     "react": "^16.7.0",
     "react-dom": "^16.7.0",
+    "tapable": "^1.1.1",
     "webpack-dev-server": "^3.1.14"
   }
 }

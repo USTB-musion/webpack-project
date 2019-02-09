@@ -564,3 +564,620 @@ module.exports = {
   ]
 };
 ```
+### Tapable
+对于Webpack有一句话**Everything is a plugin**，Webpack本质上是一种事件流的机制，它的工作流程就是将各个插件串联起来，而实现这一切的核心就是Tapable。Tapable有点类似nodejs的events库，核心原理也是依赖与发布订阅模式。webpack中最核心的负责编译的Compiler和负责创建bundles的Compilation都是Tapable的实例。下面介绍一下tapable的用法和原理。以下实例的代码原文地址为[https://github.com/USTB-musion/webpack-project](https://github.com/USTB-musion/webpack-project)
+``` js
+const {
+	SyncHook,
+	SyncBailHook,
+	SyncWaterfallHook,
+	SyncLoopHook,
+	AsyncParallelHook,
+	AsyncParallelBailHook,
+	AsyncSeriesHook,
+	AsyncSeriesBailHook,
+	AsyncSeriesWaterfallHook
+ } = require("tapable");
+```
+### Tapable Hook概览
+![](https://user-gold-cdn.xitu.io/2019/2/8/168cdb3c4c9a71b9?w=915&h=430&f=png&s=150430)
+Tapable提供了很多类型的hook，分为同步和异步两大类(异步中又区分异步并行和异步串行)，而根据事件执行的终止条件的不同，由衍生出 Bail/Waterfall/Loop 类型。
+
+下图展示了每种类型的作用：
+![](https://user-gold-cdn.xitu.io/2018/12/28/167f458ac2b1e527?imageView2/0/w/1280/h/960/format/webp/ignore-error/1)
+![](https://user-gold-cdn.xitu.io/2018/12/28/167f458d6ff8424f?imageView2/0/w/1280/h/960/format/webp/ignore-error/1)
+- **BasicHook:** 执行每一个，不关心函数的返回值，有 SyncHook、AsyncParallelHook、AsyncSeriesHook。
+- **BailHook:** 顺序执行 Hook，遇到第一个结果 result !== undefined 则返回，不再继续执行。有：SyncBailHook、AsyncSeriseBailHook, AsyncParallelBailHook。
+- **WaterfallHook:** 类似于 reduce，如果前一个 Hook 函数的结果 result !== undefined，则 result 会作为后一个 Hook 函数的第一个参数。既然是顺序执行，那么就只有 Sync 和 AsyncSeries 类中提供这个Hook：SyncWaterfallHook，AsyncSeriesWaterfallHook
+- **LoopHook:** 不停的循环执行 Hook，直到所有函数结果 result === undefined。同样的，由于对串行性有依赖，所以只有 SyncLoopHook 和 AsyncSeriseLoopHook （PS：暂时没看到具体使用 Case）
+
+### SyncHook的用法及实现
+Sync为同步串行的执行关系，用法如下：
+``` js
+let { SyncHook } = require("tapable");
+
+class Lesson {
+  constructor() {
+    this.hooks = {
+      arch: new SyncHook(["name"])
+    };
+  }
+  // 注册监听函数
+  tap() {
+    this.hooks.arch.tap("node", function(name) {
+      console.log("node", name);
+    });
+    this.hooks.arch.tap("react", function(name) {
+      console.log("react", name);
+    });
+  }
+  start() {
+    this.hooks.arch.call("musion");
+  }
+}
+
+let l = new Lesson();
+
+// 注册这两个事件
+l.tap();
+// 启动钩子
+l.start();
+
+/**
+ * 打印出来的值为：
+ * node musion
+ * react musion
+ */
+```
+SyncHook是一个很典型的通过发布订阅方式实现的，实现方式如下：
+``` js
+// 钩子是同步的
+class SyncHook {
+  // args => ["name"]
+  constructor() {
+    this.tasks = [];
+  }
+  tap(name, task) {
+    this.tasks.push(task);
+  }
+  call(...args) {
+    this.tasks.forEach(task => task(...args));
+  }
+}
+
+let hook = new SyncHook(["name"]);
+
+hook.tap("react", function(name) {
+  console.log("react", name);
+});
+hook.tap("node", function(name) {
+  console.log("node", name);
+});
+hook.call("musion");
+
+/**
+ * 打印出来的值为：
+ * node musion
+ * react musion
+ */
+```
+
+### SyncBailHook的用法及实现
+SyncBailHook为同步串行的执行关系，只要监听函数中有一个函数的返回值不为 null，则跳过剩下所有的逻辑，用法如下：
+``` js
+let { SyncBailHook } = require("tapable");
+
+class Lesson {
+  constructor() {
+    this.hooks = {
+      arch: new SyncBailHook(["name"])
+    };
+  }
+  // 注册监听函数
+  tap() {
+    this.hooks.arch.tap("node", function(name) {
+      console.log("node", name);
+      //return "stop";
+      return undefined;
+    });
+    this.hooks.arch.tap("react", function(name) {
+      console.log("react", name);
+    });
+  }
+  start() {
+    this.hooks.arch.call("musion");
+  }
+}
+
+let l = new Lesson();
+
+// 注册这两个事件
+l.tap();
+// 启动钩子
+l.start();
+
+
+/**
+ * 打印出来的值为：
+ * node musion
+ * react musion
+ */
+```
+SyncBailHook的实现：
+``` js
+// 钩子是同步的,bail -> 保险
+class SyncBailHook {
+  // args => ["name"]
+  constructor() {
+    this.tasks = [];
+  }
+  tap(name, task) {
+    this.tasks.push(task);
+  }
+  call(...args) {
+    // 当前函数的返回值
+    let ret;
+    // 当前要先执行第一个
+    let index = 0;
+    do {
+      ret = this.tasks[index++](...args);
+    } while (ret === undefined && index < this.tasks.length);
+  }
+}
+
+let hook = new SyncBailHook(["name"]);
+
+hook.tap("react", function(name) {
+  console.log("react", name);
+  return "stop";
+});
+hook.tap("node", function(name) {
+  console.log("node", name);
+});
+hook.call("musion");
+
+
+/**
+ * 打印出来的值为：
+ * node musion
+ * react musion
+ */
+```
+
+### SyncWaterfallHook的用法及实现
+SyncWaterfallHook为同步串行的执行关系，上一个监听函数的返回值可以传给下一个监听函数，用法如下：
+``` js
+let { SyncWaterfallHook } = require("tapable");
+
+// waterfall 瀑布 上面会影响下面的
+
+class Lesson {
+  constructor() {
+    this.hooks = {
+      arch: new SyncWaterfallHook(["name"])
+    };
+  }
+  // 注册监听函数
+  tap() {
+    this.hooks.arch.tap("node", function(name) {
+      console.log("node", name);
+      return "node学得还不错";
+    });
+    this.hooks.arch.tap("react", function(data) {
+      console.log("react", data);
+    });
+  }
+  start() {
+    this.hooks.arch.call("musion");
+  }
+}
+
+let l = new Lesson();
+
+// 注册这两个事件
+l.tap();
+// 启动钩子
+l.start();
+
+/**
+ * 打印出来的值为：
+ * node musion
+ * react node学得还不错
+ */
+```
+SyncWaterfallHook的实现：
+``` js
+// 钩子是同步的
+class SyncWaterfallHook {
+  // args => ["name"]
+  constructor() {
+    this.tasks = [];
+  }
+  tap(name, task) {
+    this.tasks.push(task);
+  }
+  call(...args) {
+    let [first, ...others] = this.tasks;
+    let ret = first(...args);
+    others.reduce((a, b) => {
+      return b(a);
+    }, ret);
+  }
+}
+
+let hook = new SyncWaterfallHook(["name"]);
+
+hook.tap("react", function(name) {
+  console.log("react", name);
+  return "react ok";
+});
+hook.tap("node", function(data) {
+  console.log("node", data);
+  return "node ok";
+});
+hook.tap("webpack", function(data) {
+  console.log("webpack", data);
+});
+hook.call("musion");
+
+/**
+ * 打印出来的值为：
+ * react musion
+ * node react ok
+ * webpack node ok
+ */
+```
+
+### SyncLoopHook的用法及实现
+SyncLoopHook为同步循环的执行关系，当监听函数被触发的时候，如果该监听函数返回true时则这个监听函数会反复执行，如果返回 undefined 则表示退出循环，用法如下：
+``` js
+let { SyncLoopHook } = require("tapable");
+
+// 同步遇到某个不返回undefined的监听函数会多次执行
+
+class Lesson {
+  constructor() {
+    this.index = 0;
+    this.hooks = {
+      arch: new SyncLoopHook(["name"])
+    };
+  }
+  // 注册监听函数
+  tap() {
+    this.hooks.arch.tap("node", name => {
+      console.log("node", name);
+      return ++this.index === 3 ? undefined : "继续学";
+    });
+    this.hooks.arch.tap("react", data => {
+      console.log("react", data);
+    });
+  }
+  start() {
+    this.hooks.arch.call("musion");
+  }
+}
+
+let l = new Lesson();
+
+// 注册这两个事件
+l.tap();
+// 启动钩子
+l.start();
+
+/**
+ * 打印出来的值为：
+ * node musion
+ * node musion
+ * node musion
+ * react musion
+ */
+
+```
+SyncLoopHook的实现：
+``` js
+// 钩子是同步的
+class SyncLoopHook {
+  // args => ["name"]
+  constructor() {
+    this.tasks = [];
+  }
+  tap(name, task) {
+    this.tasks.push(task);
+  }
+  call(...args) {
+    this.tasks.forEach(task => {
+      let ret;
+      do {
+        ret = task(...args);
+      } while (ret != undefined);
+    });
+  }
+}
+
+let hook = new SyncLoopHook(["name"]);
+
+let total = 0;
+hook.tap("react", function(name) {
+  console.log("react", name);
+  return ++total === 3 ? undefined : "继续学";
+});
+hook.tap("node", function(data) {
+  console.log("node", data);
+});
+hook.tap("webpack", function(data) {
+  console.log("webpack", data);
+});
+hook.call("musion");
+
+/**
+ * 打印出来的值为：
+ * react musion
+ * react musion
+ * react musion
+ * node musion
+ * webpack musion
+ */
+```
+
+### AsyncParallelHook的用法及实现
+AsyncParallelHook为异步并发的执行关系，用法如下：
+``` js
+let { AsyncParallelHook } = require("tapable");
+// 异步的钩子分为串行和并行
+// 串行：第一个异步执行完，才会执行第二个
+// 并行：需要等待所有并发的异步事件执行后再执行回调方法
+
+// 注册方法： tap注册 tapAsync注册
+
+class Lesson {
+  constructor() {
+    this.hooks = {
+      arch: new AsyncParallelHook(["name"])
+    };
+  }
+  // 注册监听函数
+  tap() {
+    this.hooks.arch.tapAsync("node", (name, cb) => {
+      setTimeout(() => {
+        console.log("node", name);
+        cb();
+      }, 1000);
+    });
+    this.hooks.arch.tapAsync("react", (name, cb) => {
+      setTimeout(() => {
+        console.log("react", name);
+        cb();
+      }, 1000);
+    });
+  }
+  start() {
+    this.hooks.arch.callAsync("musion", function() {
+      console.log("end");
+    });
+  }
+}
+
+let l = new Lesson();
+
+// 注册这两个事件
+l.tap();
+// 启动钩子
+l.start();
+
+/**
+ * 打印出来的值为：
+ * node musion
+ * react musion
+ * end
+ */
+
+
+```
+AsyncParallelHook的实现：
+``` js
+class SyncParralleHook {
+  constructor() {
+    this.tasks = [];
+  }
+  tapAsync(name, task) {
+    this.tasks.push(task);
+  }
+  callAsync(...args) {
+    // 拿出最终的函数
+    let finalCallBack = args.pop();
+    let index = 0;
+    // 类似Promise.all
+    let done = () => {
+      index++;
+      if (index === this.tasks.length) {
+        finalCallBack();
+      }
+    };
+    this.tasks.forEach(task => {
+      task(...args, done);
+    });
+  }
+}
+
+let hook = new SyncParralleHook(["name"]);
+
+hook.tapAsync("react", function(name, cb) {
+  setTimeout(() => {
+    console.log("react", name);
+    cb();
+  }, 1000);
+});
+hook.tapAsync("node", function(name, cb) {
+  setTimeout(() => {
+    console.log("node", name);
+    cb();
+  }, 1000);
+});
+hook.callAsync("musion", function() {
+  console.log("end");
+});
+
+
+/**
+ * 打印出来的值为：
+ * react musion
+ * react musion
+ * react musion
+ * node musion
+ * webpack musion
+ */
+```
+
+### AsyncSeriesHook的用法及实现
+AsyncSeriesHook为异步串行的执行关系，用法如下：
+``` js
+// AsyncSeriesHook 异步串行
+let { AsyncSeriesHook } = require("tapable");
+
+class Lesson {
+  constructor() {
+    this.hooks = {
+      arch: new AsyncSeriesHook(["name"])
+    };
+  }
+  // 注册监听函数
+  tap() {
+    this.hooks.arch.tapAsync("node", (name, cb) => {
+      setTimeout(() => {
+        console.log("node", name);
+        cb();
+      }, 4000);
+    });
+    this.hooks.arch.tapAsync("react", (name, cb) => {
+      setTimeout(() => {
+        console.log("react", name);
+        cb();
+      }, 1000);
+    });
+  }
+  start() {
+    this.hooks.arch.callAsync("musion", function() {
+      console.log("end");
+    });
+  }
+}
+
+let l = new Lesson();
+
+// 注册这两个事件
+l.tap();
+// 启动钩子
+l.start();
+
+/**
+ * 打印出来的值为：
+ * node musion
+ * react musion
+ * end
+ */
+
+
+```
+AsyncSeriesHook的实现：
+``` js
+class SyncSeriesHook {
+  constructor() {
+    this.tasks = [];
+  }
+  tapAsync(name, task) {
+    this.tasks.push(task);
+  }
+  callAsync(...args) {
+    let finalCallback = args.pop();
+    let index = 0;
+    let next = () => {
+      if (this.tasks.length === index) return finalCallback();
+      let task = this.tasks[index++];
+      task(...args, next);
+    };
+    next();
+  }
+}
+```
+
+### AsyncSeriesWaterfallHook的用法及实现
+AsyncSeriesWaterfallHook为异步串行的执行关系，上一个监听函数的中的callback(err, data)的第二个参数,可以作为下一个监听函数的参数，用法如下：
+``` js
+class SyncSeriesWaterfallHook {
+  constructor() {
+    this.tasks = [];
+  }
+  tapAsync(name, task) {
+    this.tasks.push(task);
+  }
+  callAsync(...args) {
+    let finalCallback = args.pop();
+    let index = 0;
+    let next = (err, data) => {
+      let task = this.tasks[index];
+      if (!task) return finalCallback();
+      // 执行的是第一个
+      if (index === 0) {
+        task(...args, next);
+      } else {
+        task(data, next);
+      }
+      index++;
+    };
+    next();
+  }
+}
+
+let hook = new SyncSeriesWaterfallHook(["name"]);
+
+hook.tapAsync("react", function(name, cb) {
+  setTimeout(() => {
+    console.log("react", name);
+    cb(null, "musion");
+  }, 3000);
+});
+hook.tapAsync("node", function(name, cb) {
+  setTimeout(() => {
+    console.log("node", name);
+    cb(null);
+  }, 1000);
+});
+hook.callAsync("musion", function() {
+  console.log("end");
+});
+
+/**
+ * 打印出来的值为：
+ * node musion
+ * end
+ */
+
+
+```
+AsyncSeriesWaterfallHook的实现：
+``` js
+class SyncSeriesWaterfallHook {
+  constructor() {
+    this.tasks = [];
+  }
+  tapAsync(name, task) {
+    this.tasks.push(task);
+  }
+  callAsync(...args) {
+    let finalCallback = args.pop();
+    let index = 0;
+    let next = (err, data) => {
+      let task = this.tasks[index];
+      if (!task) return finalCallback();
+      // 执行的是第一个
+      if (index === 0) {
+        task(...args, next);
+      } else {
+        task(data, next);
+      }
+      index++;
+    };
+    next();
+  }
+}
+```
